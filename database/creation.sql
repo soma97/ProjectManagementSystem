@@ -49,18 +49,19 @@ CREATE TABLE IF NOT EXISTS `project_management_system`.`activity` (
   `parent_activity_id` INT NULL,
   `created_at` INT(11) NOT NULL,
   `updated_at` INT(11) NOT NULL,
+  `done_until` DATETIME NOT NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_activity_project1_idx` (`project_id` ASC) VISIBLE,
   INDEX `fk_activity_activity1_idx` (`parent_activity_id` ASC) VISIBLE,
   CONSTRAINT `fk_activity_project1`
     FOREIGN KEY (`project_id`)
     REFERENCES `project_management_system`.`project` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_activity_activity1`
     FOREIGN KEY (`parent_activity_id`)
     REFERENCES `project_management_system`.`activity` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
@@ -79,12 +80,12 @@ CREATE TABLE IF NOT EXISTS `project_management_system`.`user_has_project` (
   CONSTRAINT `fk_user_has_project_user`
     FOREIGN KEY (`user_id`)
     REFERENCES `project_management_system`.`user` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_user_has_project_project1`
     FOREIGN KEY (`project_id`)
     REFERENCES `project_management_system`.`project` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
@@ -99,18 +100,19 @@ CREATE TABLE IF NOT EXISTS `project_management_system`.`effort` (
   `activity_id` INT NOT NULL,
   `created_at` INT NOT NULL,
   `updated_at` INT NOT NULL,
+  `description` VARCHAR(200) NOT NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_effort_user1_idx` (`user_id` ASC) VISIBLE,
   INDEX `fk_effort_activity1_idx` (`activity_id` ASC) VISIBLE,
   CONSTRAINT `fk_effort_user1`
     FOREIGN KEY (`user_id`)
     REFERENCES `project_management_system`.`user` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_effort_activity1`
     FOREIGN KEY (`activity_id`)
     REFERENCES `project_management_system`.`activity` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
@@ -128,12 +130,12 @@ CREATE TABLE IF NOT EXISTS `project_management_system`.`user_has_activity` (
   CONSTRAINT `fk_user_has_activity_user1`
     FOREIGN KEY (`user_id`)
     REFERENCES `project_management_system`.`user` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_user_has_activity_activity1`
     FOREIGN KEY (`activity_id`)
     REFERENCES `project_management_system`.`activity` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
@@ -153,7 +155,7 @@ CREATE TABLE IF NOT EXISTS `project_management_system`.`revenue` (
   CONSTRAINT `fk_revenue_project1`
     FOREIGN KEY (`project_id`)
     REFERENCES `project_management_system`.`project` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 

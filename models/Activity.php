@@ -4,8 +4,6 @@ namespace app\models;
 
 use Yii;
 use yii\behaviors\TimestampBehavior;
-use yii\db\ActiveRecord;
-use yii\db\Expression;
 
 /**
  * This is the model class for table "activity".
@@ -17,6 +15,7 @@ use yii\db\Expression;
  * @property int|null $parent_activity_id
  * @property int $created_at
  * @property int $updated_at
+ * @property string $done_until
  *
  * @property Activity $parentActivity
  * @property Activity[] $activities
@@ -41,10 +40,10 @@ class Activity extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['name', 'estimated_hours', 'project_id'], 'required'],
+            [['name', 'estimated_hours', 'project_id', 'done_until'], 'required'],
             [['estimated_hours', 'project_id', 'parent_activity_id', 'created_at', 'updated_at'], 'integer'],
+            [['done_until'], 'safe'],
             [['name'], 'string', 'max' => 45],
-            [['estimated_hours'], 'integer', 'min'=>0],
             [['parent_activity_id'], 'exist', 'skipOnError' => true, 'targetClass' => Activity::className(), 'targetAttribute' => ['parent_activity_id' => 'id']],
             [['project_id'], 'exist', 'skipOnError' => true, 'targetClass' => Project::className(), 'targetAttribute' => ['project_id' => 'id']],
         ];
@@ -56,6 +55,7 @@ class Activity extends \yii\db\ActiveRecord
             TimestampBehavior::class
         ];
     }
+
 
     /**
      * {@inheritdoc}
@@ -70,12 +70,8 @@ class Activity extends \yii\db\ActiveRecord
             'parent_activity_id' => 'Parent Activity ID',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
+            'done_until' => 'Done Until',
         ];
-    }
-
-    public static function getActivityById($id)
-    {
-        return self::findOne($id);
     }
 
     /**

@@ -2,8 +2,12 @@
 
 namespace app\controllers;
 
+use app\models\AddUserForm;
 use app\models\Effort;
+use app\models\User;
+use app\models\UserHasActivity;
 use app\models\UserHasProject;
+use Exception;
 use Yii;
 use app\models\Activity;
 use yii\data\ActiveDataProvider;
@@ -48,11 +52,13 @@ class ActivityController extends Controller
     public function beforeAction($action)
     {
         $requestedId = Yii::$app->request->getQueryParam('id');
-        if($requestedId !=null) {
-            $projectId = Activity::findOne($requestedId)->project_id;
-            $userProjectRelation = UserHasProject::findOne(['user_id' => Yii::$app->user->id, 'project_id' => $projectId]);
-            if ($userProjectRelation == null) {
-                throw new ForbiddenHttpException(Yii::t('yii', 'You are not allowed to perform this action.'));
+        if($requestedId != null) {
+            $activity = Activity::findOne($requestedId);
+            if($activity != null) {
+                $userProjectRelation = UserHasProject::findOne(['user_id' => Yii::$app->user->id, 'project_id' => $activity->project_id]);
+                if ($userProjectRelation == null) {
+                    throw new ForbiddenHttpException(Yii::t('yii', 'You are not allowed to perform this action.'));
+                }
             }
         }
         return parent::beforeAction($action);
@@ -124,6 +130,17 @@ class ActivityController extends Controller
      */
     public function actionUpdate($id)
     {
+        $newUserModel = new AddUserForm();
+        if($newUserModel->load(Yii::$app->request->post())) {
+            try {
+                $this->findModel($id)->link('users', User::findOne($newUserModel->user), ['role' => $newUserModel->role]);
+                return $this->redirect(['view', 'id' => $id]);
+            } catch (Exception $ex)
+            {
+                Yii::$app->session->setFlash('error', "User is already assigned to this activity.");
+            }
+        }
+
         $model = $this->findModel($id);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
@@ -144,9 +161,23 @@ class ActivityController extends Controller
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
+        $deletedActivity = $this->findModel($id);
+        $projectId = $deletedActivity->project_id;
+        $deletedActivity->delete();
 
-        return $this->redirect(['index']);
+        return $this->redirect('/project/view?id='.$projectId);
+    }
+
+    public function actionRemoveuser($id, $userId)
+    {
+        $activity = Activity::findOne($id);
+        $owner = UserHasProject::findOne(['user_id'=>Yii::$app->user->id, 'project_id'=> $activity->project_id]);
+        if(UserHasActivity::findOne(['user_id'=> Yii::$app->user->id, 'activity_id' => $id]) != null || $owner['role'] === 'owner')
+        {
+            UserHasActivity::findOne(['user_id'=> $userId, 'activity_id' => $id])->delete();
+            return $this->redirect("/activity/view?id=$id");
+        }
+        throw new ForbiddenHttpException(Yii::t('yii', 'You are not allowed to perform this action.'));
     }
 
     /**

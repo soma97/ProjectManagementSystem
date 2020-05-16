@@ -32,8 +32,8 @@ $this->title = $model->name;
                 }
                 echo '<br><br><br><h4>Project members</h4><hr>';
                 foreach ($usersOnProject as $userOnProject){
-                    echo Html::a($userOnProject['username'].' ('.$userOnProject['userHasProjects'][0]['role']. ($userOnProject['userHasProjects'][0]['internal']==false ? ' - external':'') .')',['users/view', 'id' => $userOnProject['id']], ['class' => 'well well-sm']);
-                    echo '<br><br>';
+                    echo "<div class='well well-sm' style='background-color: #555555'>".$userOnProject['username'].' ('.$userOnProject['userHasProjects'][0]['role']. ($userOnProject['userHasProjects'][0]['internal']==false ? ' - external)':')').
+                        (($currentUser['role']==='owner' && $currentUser['user_id'] != $userOnProject['id']) ? "<span class='pull-right'><a href='/project/removeuser?userId=".$userOnProject['id']."&id=$model->id' style='color:#bb1111;'><b>X</b></a></span>" : "")."</div>";
                 }
                 ?>
             </p>

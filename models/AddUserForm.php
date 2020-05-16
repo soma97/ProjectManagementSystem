@@ -2,8 +2,6 @@
 
 
 namespace app\models;
-
-
 use yii\base\Model;
 
 class AddUserForm extends Model

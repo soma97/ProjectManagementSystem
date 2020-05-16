@@ -1,4 +1,9 @@
-.dark-theme {
-    background-image: url("/images/background.jpg");
-    color: #DDDDDD;
+.dark-theme-text-color {
+    color: white;
+}
+
+.dark-theme-body{
+    background-color: black;
+    background-image: url("/images/background-tiny.jpg");
+    background-size:cover;
 }

@@ -51,7 +51,7 @@ class ProjectController extends Controller
     public function beforeAction($action)
     {
         $requestedId = Yii::$app->request->getQueryParam('id');
-        if($requestedId !=null) {
+        if($requestedId != null) {
             $userProjectRelation = UserHasProject::findOne(['user_id' => Yii::$app->user->id, 'project_id' => $requestedId]);
             if ($userProjectRelation == null) {
                 throw new ForbiddenHttpException(Yii::t('yii', 'You are not allowed to perform this action.'));
@@ -150,6 +150,19 @@ class ProjectController extends Controller
         $this->findModel($id)->delete();
 
         return $this->redirect(['index']);
+    }
+
+
+    public function actionRemoveuser($id, $userId)
+    {
+        $owner = UserHasProject::findOne(['user_id'=> Yii::$app->user->id, 'project_id' => $id]);
+        echo $owner->role;
+        if($owner != null && $owner['role'] === 'owner')
+        {
+            UserHasProject::findOne(['user_id'=> $userId, 'project_id' => $id])->delete();
+            return $this->redirect("/project/view?id=$id");
+        }
+        throw new ForbiddenHttpException(Yii::t('yii', 'You are not allowed to perform this action.'));
     }
 
     /**

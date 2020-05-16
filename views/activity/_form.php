@@ -1,5 +1,7 @@
 <?php
 
+use kartik\datecontrol\DateControl;
+use kartik\datetime\DateTimePicker;
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 
@@ -15,6 +17,17 @@ use yii\widgets\ActiveForm;
     <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
 
     <?= $form->field($model, 'estimated_hours')->textInput() ?>
+
+    <?= $form->field($model, 'done_until')->widget(
+                    DateTimePicker::className(), [
+                        'options' => ['placeholder' => 'Select time'],
+                        'convertFormat' => true,
+                        'pluginOptions' => [
+                        'format' => 'yyyy-MM-dd HH:mm:ss',
+                        'type'=> DateControl::FORMAT_DATETIME,
+                        'todayHighlight' => true,
+                    ]
+        ]); ?>
 
     <?= $form->field($model, 'project_id')->hiddenInput()->label(false) ?>
 

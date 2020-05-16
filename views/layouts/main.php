@@ -22,10 +22,9 @@ AppAsset::register($this);
     <title><?= Html::encode($this->title) ?></title>
     <?php $this->head() ?>
 </head>
-<body class="dark-theme">
+<body class="dark-theme-body">
 <?php $this->beginBody() ?>
-
-<div class="wrap">
+<div class="wrap dark-theme-text-color">
     <?php
     NavBar::begin([
         'brandLabel' => Yii::$app->name,
@@ -65,12 +64,11 @@ AppAsset::register($this);
 
 <hr>
 <footer>
-    <div class="container">
+    <div class="container dark-theme-text-color">
         <p class="pull-left">&copy; Project management system <?= date('Y') ?></p>
     </div>
 </footer>
 <br>
-
 <?php $this->endBody() ?>
 </body>
 </html>
