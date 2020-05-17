@@ -36,17 +36,18 @@ $this->title = 'Update Project: ' . $model->name;
                 $currentUser = $model->getUserHasProjects()->where(['user_id' => Yii::$app->user->getId()])->one();
                 $usersOnProject = $model->getUsers()->with('userHasProjects')->all();
                 if($currentUser['role'] === 'owner'){
+
                     $form = ActiveForm::begin();
                     $userForm = new AddUserForm();
-                    $listOfUsersToAdd = User::find()->all();
-                    $listOfUsersToAdd = array_udiff($listOfUsersToAdd, $usersOnProject, function ($obj_a, $obj_b) {
+
+                    $listOfUsersToAdd = array_udiff(User::find()->all(), $usersOnProject, function ($obj_a, $obj_b) {
                         return $obj_a->id - $obj_b->id;
                     });
-                    $listItems = $listData=ArrayHelper::map($listOfUsersToAdd,'id','username');
+
                     echo $form->field($userForm, 'user')
                         ->dropDownList(
-                        $listItems,           // Flat array ('id'=>'label')
-                        ['prompt'=>'Select user']    // options
+                            ArrayHelper::map($listOfUsersToAdd,'id','username'),           // Flat array ('id'=>'label')
+                            ['prompt'=>'Select user']    // options
                         );
 
                     echo $form->field($userForm, 'role')

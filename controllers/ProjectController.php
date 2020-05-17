@@ -4,7 +4,9 @@ namespace app\controllers;
 
 use app\models\Activity;
 use app\models\AddUserForm;
+use app\models\Revenue;
 use app\models\User;
+use app\models\UserHasActivity;
 use app\models\UserHasProject;
 use ProjectAccessControl;
 use Yii;
@@ -30,10 +32,10 @@ class ProjectController extends Controller
         return [
             'access' => [
                 'class' => AccessControl::class,
-                'only' => ['create', 'update', 'delete', 'index'],
+                'only' => ['create', 'update', 'delete', 'index', 'revenue'],
                 'rules' => [
                     [
-                        'actions' => ['create', 'update', 'delete', 'index'],
+                        'actions' => ['create', 'update', 'delete', 'index', 'revenue'],
                         'allow' => true,
                         'roles' => ['@'],
                     ],
@@ -156,13 +158,33 @@ class ProjectController extends Controller
     public function actionRemoveuser($id, $userId)
     {
         $owner = UserHasProject::findOne(['user_id'=> Yii::$app->user->id, 'project_id' => $id]);
-        echo $owner->role;
         if($owner != null && $owner['role'] === 'owner')
         {
             UserHasProject::findOne(['user_id'=> $userId, 'project_id' => $id])->delete();
             return $this->redirect("/project/view?id=$id");
         }
         throw new ForbiddenHttpException(Yii::t('yii', 'You are not allowed to perform this action.'));
+    }
+
+    public function actionRevenue($id)
+    {
+        $owner = UserHasProject::findOne(['user_id'=>Yii::$app->user->id, 'project_id'=> $id]);
+        if($owner == null || ($owner['role'] !== 'owner' && $owner['role'] !== 'supervisor'))
+        {
+            throw new ForbiddenHttpException(Yii::t('yii', 'You are not allowed to perform this action.'));
+        }
+
+        $postModel = new Revenue();
+        if(Yii::$app->request->isPost && $postModel->load(Yii::$app->request->post()))
+        {
+            $postModel->project_id = $id;
+            $postModel->save();
+        }
+
+        return $this->render('revenue', [
+            'model' => $this->findModel($id),
+            'role' => $owner->role
+        ]);
     }
 
     /**

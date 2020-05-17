@@ -150,6 +150,7 @@ CREATE TABLE IF NOT EXISTS `project_management_system`.`revenue` (
   `created_at` INT NOT NULL,
   `updated_at` INT NOT NULL,
   `project_id` INT NOT NULL,
+  `type` VARCHAR(10) NOT NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_revenue_project1_idx` (`project_id` ASC) VISIBLE,
   CONSTRAINT `fk_revenue_project1`

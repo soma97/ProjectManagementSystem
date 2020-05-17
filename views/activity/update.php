@@ -42,10 +42,10 @@ $this->params['breadcrumbs'][] = 'Update';
             if($currentUser['role'] === 'owner' || ( $currentUser['role'] === 'participant' && $currentUser['internal'] == true)){
                 $form = ActiveForm::begin();
                 $userForm = new AddUserForm();
-                $listItems = $listData=ArrayHelper::map($usersOnProject,'id','username');
+
                 echo $form->field($userForm, 'user')
                     ->dropDownList(
-                        $listItems,           // Flat array ('id'=>'label')
+                        ArrayHelper::map($usersOnProject,'id','username'),           // Flat array ('id'=>'label')
                         ['prompt'=>'Select user']    // options
                     );
 

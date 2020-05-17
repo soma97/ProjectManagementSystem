@@ -30,6 +30,10 @@ $this->title = $model->name;
                     echo '&nbsp';
                     echo Html::a('Create activity', ['activity/create', 'project_id' => $model->id], ['class' => 'btn btn-success']);
                 }
+                if($currentUser['role'] === 'owner' || $currentUser['role'] === 'supervisor'){
+                    echo '<br><br>';
+                    echo Html::a('Income and outcome', ['project/revenue', 'id' => $model->id], ['class' => 'btn btn-default']);
+                }
                 echo '<br><br><br><h4>Project members</h4><hr>';
                 foreach ($usersOnProject as $userOnProject){
                     echo "<div class='well well-sm' style='background-color: #555555'>".$userOnProject['username'].' ('.$userOnProject['userHasProjects'][0]['role']. ($userOnProject['userHasProjects'][0]['internal']==false ? ' - external)':')').
@@ -41,7 +45,7 @@ $this->title = $model->name;
         <div class="col-md-9">
    <?php foreach ($model->getActivitiesFor(null)->all() as $row){ ?>
        <hr>
-       <h3> <?= Html::a($row['name'], ['activity/view', 'id' => $row['id']]) ?></h3>
+       <h3><?= Html::a($row['name'], ['activity/view', 'id' => $row['id']]) ?></h3>
        <p><?= Yii::$app->formatter->asPercent($model->getCompletionForActivity($row['id'])/100,2) ?> completed</p>
     <?php }?>
         </div>
