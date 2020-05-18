@@ -38,7 +38,7 @@ $this->params['breadcrumbs'][] = 'Update';
             <?php
             $currentProject = Project::findOne($model->project_id);
             $currentUser = User::findOne(Yii::$app->user->getId())->getUserHasProjects()->where(['project_id' => $model->project_id])->one();
-            $usersOnProject = $currentProject->getUsers()->with('userHasProjects')->all();
+            $usersOnProject = $currentProject->getUsers()->all();
             if($currentUser['role'] === 'owner' || ( $currentUser['role'] === 'participant' && $currentUser['internal'] == true)){
                 $form = ActiveForm::begin();
                 $userForm = new AddUserForm();
