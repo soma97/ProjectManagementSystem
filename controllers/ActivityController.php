@@ -33,11 +33,19 @@ class ActivityController extends Controller
                 'class' => AccessControl::className(),
                 'rules' => [
                     [
-                        'actions' => ['view', 'create', 'update', 'delete', 'index'],
+                        'actions' => ['view', 'create', 'index'],
                         'allow' => true,
                         'roles' => ['@'],
                         'matchCallback' => function ($rule, $action) {
-                            return $this->getAccessRights();
+                            return $this->getAccessRights(false, false);
+                        }
+                    ],
+                    [
+                        'actions' => ['update', 'delete'],
+                        'allow' => true,
+                        'roles' => ['@'],
+                        'matchCallback' => function ($rule, $action) {
+                            return $this->getAccessRights(true, false);
                         }
                     ],
                     [
@@ -45,9 +53,9 @@ class ActivityController extends Controller
                         'allow' => true,
                         'roles' => ['@'],
                         'matchCallback' => function ($rule, $action) {
-                            return $this->getAccessRights() && $this->getRemoveUserRights();
+                            return $this->getAccessRights(false, true);
                         }
-                    ],
+                    ]
                 ],
             ],
             'verbs' => [
@@ -59,36 +67,31 @@ class ActivityController extends Controller
         ];
     }
 
-    public function getAccessRights()
+    public function getAccessRights(bool $updateOrDeleteRights, bool $removeUserRights)
     {
-        $requestedId = Yii::$app->request->getQueryParam('id');
-        if($requestedId != null) {
-            $activity = Activity::findOne($requestedId);
-            if($activity != null) {
-                $userProjectRelation = UserHasProject::findOne(['user_id' => Yii::$app->user->id, 'project_id' => $activity->project_id]);
-                if ($userProjectRelation == null) {
-                    return false;
-                }
-            }
+        $activityId = Yii::$app->request->getQueryParam('id');
+        $activity = null;
+        if($activityId == null || ($activity = Activity::findOne($activityId)) == null) {
+            return true;
         }
+        $userProjectRelation = UserHasProject::findOne(['user_id' => Yii::$app->user->id, 'project_id' => $activity->project_id]);
+        if ($userProjectRelation == null) {
+            return false;
+        }
+
+        if($updateOrDeleteRights && ($userProjectRelation['role'] === 'supervisor' ||
+                ($userProjectRelation['role'] === 'participant' && $userProjectRelation['internal'] == false))) {
+            return false;
+        }
+
+        if($removeUserRights && ($userProjectRelation['role'] !== 'owner' &&
+                (UserHasActivity::findOne(['user_id'=> Yii::$app->user->id, 'activity_id' => $activityId]) == null))) {
+            return false;
+        }
+
         return true;
     }
 
-    public function getRemoveUserRights()
-    {
-        $activityId = Yii::$app->request->getQueryParam('id');
-        if($activityId == null)
-        {
-            return false;
-        }
-        $activity = Activity::findOne($activityId);
-        $owner = UserHasProject::findOne(['user_id'=>Yii::$app->user->id, 'project_id'=> $activity->project_id]);
-        if(UserHasActivity::findOne(['user_id'=> Yii::$app->user->id, 'activity_id' => $activityId]) != null || $owner['role'] === 'owner')
-        {
-            return true;
-        }
-        return false;
-    }
     /**
      * Lists all Activity models.
      * @return mixed

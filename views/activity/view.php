@@ -2,6 +2,7 @@
 
 use app\models\Effort;
 use app\models\UserHasProject;
+use yii\db\Query;
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 use yii\widgets\DetailView;
@@ -9,15 +10,15 @@ use yii\widgets\DetailView;
 /* @var $this yii\web\View */
 /* @var $model app\models\Activity */
 
-$this->title = $model->name;
+$this->title = Html::encode($model->name);
 \yii\web\YiiAsset::register($this);
 ?>
 <div class="activity-view">
 
     <h3><?= $model->getParentActivity()->count() > 0 ? (Html::a($model->getParentActivity()->one()->name,
-                ['view', 'id' => $model->parent_activity_id]) .' / '. Html::encode($this->title))
+                ['view', 'id' => $model->parent_activity_id]) .' / '. $this->title)
             :(Html::a($model->getProject()->one()->name,
-                    ['/project/view', 'id' => $model->project_id]).' / '.$model->name) ?></h3>
+                    ['/project/view', 'id' => $model->project_id]).' / '. $this->title) ?></h3>
 
     <div>
         <?php
@@ -29,9 +30,9 @@ $this->title = $model->name;
                 echo '&nbsp';
                 echo Html::a('Create subactivity', ['activity/create', 'project_id' => $model->project_id, 'parent_id' => $model->id], ['class' => 'btn btn-success']);
             }
-            $usersOnActivity = $model->getUsers()->with('userHasActivities')->all();
+            $usersOnActivity = (new Query())->select(['*'])->from('user')->innerJoin('user_has_activity', 'user_id=id')->where(['activity_id' => $model->id])->all();
             foreach ($usersOnActivity as $userOnActivity){
-                echo "<span class='well well-sm pull-right' style='background-color: #555555; margin-left: 5px;'>".$userOnActivity['username'].' ('.$userOnActivity['userHasActivities'][0]['role'].")".
+                echo "<span class='well well-sm pull-right' style='background-color: #555555; margin-left: 5px;'>".Html::encode($userOnActivity['username']).' ('.$userOnActivity['role'].")".
                     (($userProjectRelation['role']==='owner' || Yii::$app->user->id == $userOnActivity['id']) ? "&nbsp;<span class='pull-right'><a href='/activity/removeuser?userId=".$userOnActivity['id']."&id=$model->id' style='color:#bb1111;'><b>X</b></a></span>" : "")."</span>";
             }
             if(sizeof($usersOnActivity) == 0){
@@ -93,7 +94,7 @@ $this->title = $model->name;
             echo '</div><div class="col-md-8">';
             foreach ($model->getEfforts()->orderBy('updated_at DESC')->all() as $effort) {
                 $username = $effort->user->username;
-                echo "<hr><small class='pull-right' style='color: #999999'>".Yii::$app->formatter->asDatetime($effort->updated_at, 'HH:mm dd.MM.yyyy')."</small><h4>$username submitted $effort->hours hours.</h4>"."<small>".$effort->description."</small>";
+                echo "<hr><small class='pull-right' style='color: #999999'>".Yii::$app->formatter->asDatetime($effort->updated_at, 'HH:mm dd.MM.yyyy')."</small><h4>".Html::encode($username)." submitted $effort->hours hours.</h4>"."<small>".Html::encode($effort->description)."</small>";
             }
             echo '</div></div>';
         }

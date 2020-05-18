@@ -19,7 +19,7 @@ $this->title = 'Project management system';
         <div class="row">
             <div class="col-lg-4">
                 <h2>Access control</h2>
-                <p>Only users assigned to your project can access its content.</p>
+                <p>Only users assigned to your project can access its content. Role based access on your project data.</p>
             </div>
             <div class="col-lg-4">
                 <h2>Unlimited</h2>

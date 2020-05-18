@@ -34,21 +34,21 @@ class ProjectController extends Controller
                 'class' => AccessControl::class,
                 'rules' => [
                     [
-                        'actions' => ['view', 'create', 'update', 'delete', 'index', 'revenue'],
+                        'actions' => ['view', 'create', 'index', 'revenue'],
                         'allow' => true,
                         'roles' => ['@'],
                         'matchCallback' => function ($rule, $action) {
-                            return $this->getAccessRights();
+                            return $this->getAccessRights(false);
                         }
                     ],
                     [
-                        'actions' => ['removeuser'],
+                        'actions' => ['update', 'delete', 'removeuser'],
                         'allow' => true,
                         'roles' => ['@'],
                         'matchCallback' => function ($rule, $action) {
-                            return $this->getAccessRights() && $this->getRemoveUserRights();
+                            return $this->getAccessRights(true);
                         }
-                    ],
+                    ]
                 ],
             ],
             'verbs' => [
@@ -60,31 +60,21 @@ class ProjectController extends Controller
         ];
     }
 
-    public function getAccessRights()
-    {
-        $requestedId = Yii::$app->request->getQueryParam('id');
-        if($requestedId != null) {
-            $userProjectRelation = UserHasProject::findOne(['user_id' => Yii::$app->user->id, 'project_id' => $requestedId]);
-            if ($userProjectRelation == null) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public function getRemoveUserRights()
+    public function getAccessRights(bool $ownerRights)
     {
         $projectId = Yii::$app->request->getQueryParam('id');
-        if($projectId == null)
+        if($projectId == null) {
+            return true;
+        }
+        $userProjectRelation = UserHasProject::findOne(['user_id' => Yii::$app->user->id, 'project_id' => $projectId]);
+        if ($userProjectRelation == null) {
+            return false;
+        }
+        if($ownerRights && $userProjectRelation['role'] !== 'owner')
         {
             return false;
         }
-        $owner = UserHasProject::findOne(['user_id'=> Yii::$app->user->id, 'project_id' => $projectId]);
-        if($owner != null && $owner['role'] === 'owner')
-        {
-            return true;
-        }
-        return false;
+        return true;
     }
 
     /**
@@ -125,7 +115,7 @@ class ProjectController extends Controller
         $model = new Project();
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            User::findOne(Yii::$app->user->getId())->link('projects', $model, ['role' => 'owner', 'internal' => true]);
+            User::findOne(Yii::$app->user->id)->link('projects', $model, ['role' => 'owner', 'internal' => true]);
             return $this->redirect(['view', 'id' => $model->id]);
         }
 

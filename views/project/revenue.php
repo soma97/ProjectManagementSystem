@@ -12,7 +12,7 @@ $this->title = $model->name;
 ?>
 <div class="project-view">
 
-    <h2><?= Html::encode("Income and outcome for $model->name") ?></h2>
+    <h2><?= Html::encode("Income and outcome for ").Html::a($model->name, ['view', 'id' => $model->id]) ?></h2>
     <hr>
 
     <div class="row">
@@ -45,7 +45,7 @@ $this->title = $model->name;
                 $revenue = 0;
                 $incomesOutcomes = $model->getRevenues()->orderBy('updated_at ASC')->all();
                 foreach ($incomesOutcomes as $oneItem){
-                    echo "<hr><small class='pull-right' style='color: #999999'>".Yii::$app->formatter->asDatetime($oneItem->updated_at, 'HH:mm dd.MM.yyyy')."</small><h4>$oneItem->type: $oneItem->amount €</h4>"."<small>".$oneItem->description."</small>";
+                    echo "<hr><small class='pull-right' style='color: #999999'>".Yii::$app->formatter->asDatetime($oneItem->updated_at, 'HH:mm dd.MM.yyyy')."</small><h4>$oneItem->type: $oneItem->amount €</h4>"."<small>".Html::encode($oneItem->description)."</small>";
                     $oneItem->type === 'Income' ? $revenue += $oneItem->amount : $revenue -= $oneItem->amount;
                 }
                 echo "<hr><h3>Profit: $revenue €</h3>"
