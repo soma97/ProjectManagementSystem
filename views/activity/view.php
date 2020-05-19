@@ -28,12 +28,12 @@ $this->title = Html::encode($model->name);
                 $uiAdjust = false;
                 echo Html::a('Settings', ['update', 'id' => $model->id], ['class' => 'btn btn-primary']);
                 echo '&nbsp';
-                echo Html::a('Create subactivity', ['activity/create', 'project_id' => $model->project_id, 'parent_id' => $model->id], ['class' => 'btn btn-success']);
+                echo Html::a('Create subactivity', ['activity/create', 'project_id' => $model->project_id, 'parent_id' => $model->id], ['class' => 'btn btn-primary']);
             }
             $usersOnActivity = (new Query())->select(['*'])->from('user')->innerJoin('user_has_activity', 'user_id=id')->where(['activity_id' => $model->id])->all();
             foreach ($usersOnActivity as $userOnActivity){
                 echo "<span class='well well-sm pull-right' style='background-color: #555555; margin-left: 5px;'>".Html::encode($userOnActivity['username']).' ('.$userOnActivity['role'].")".
-                    (($userProjectRelation['role']==='owner' || Yii::$app->user->id == $userOnActivity['id']) ? "&nbsp;<span class='pull-right'><a href='/activity/removeuser?userId=".$userOnActivity['id']."&id=$model->id' style='color:#bb1111;'><b>X</b></a></span>" : "")."</span>";
+                    (($userProjectRelation['role']==='owner' || Yii::$app->user->id == $userOnActivity['id']) ? "&nbsp;&nbsp;<span class='pull-right'><a href='/activity/removeuser?userId=".$userOnActivity['id']. "&id=$model->id' class='glyphicon glyphicon-log-out' style='color:#870505;'></a></span>" : "")."</span>";
             }
             if(sizeof($usersOnActivity) == 0){
                 echo "<span class='well well-sm pull-right' style='background-color: #555555;'>There are no users assigned to this activity</span>";

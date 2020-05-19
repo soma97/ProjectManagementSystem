@@ -8,6 +8,7 @@ use app\models\Revenue;
 use app\models\User;
 use app\models\UserHasActivity;
 use app\models\UserHasProject;
+use kartik\mpdf\Pdf;
 use ProjectAccessControl;
 use Yii;
 use app\models\Project;
@@ -34,11 +35,11 @@ class ProjectController extends Controller
                 'class' => AccessControl::class,
                 'rules' => [
                     [
-                        'actions' => ['view', 'create', 'index', 'revenue'],
+                        'actions' => ['view', 'create', 'index'],
                         'allow' => true,
                         'roles' => ['@'],
                         'matchCallback' => function ($rule, $action) {
-                            return $this->getAccessRights(false);
+                            return $this->getAccessRights(false, false);
                         }
                     ],
                     [
@@ -46,7 +47,15 @@ class ProjectController extends Controller
                         'allow' => true,
                         'roles' => ['@'],
                         'matchCallback' => function ($rule, $action) {
-                            return $this->getAccessRights(true);
+                            return $this->getAccessRights(true, false);
+                        }
+                    ],
+                    [
+                        'actions' => ['activities', 'report', 'efforts', 'revenue'],
+                        'allow' => true,
+                        'roles' => ['@'],
+                        'matchCallback' => function ($rule, $action) {
+                            return $this->getAccessRights(false, true);
                         }
                     ]
                 ],
@@ -60,7 +69,7 @@ class ProjectController extends Controller
         ];
     }
 
-    public function getAccessRights(bool $ownerRights)
+    public function getAccessRights(bool $ownerRights, bool $reportRights)
     {
         $projectId = Yii::$app->request->getQueryParam('id');
         if($projectId == null) {
@@ -71,6 +80,10 @@ class ProjectController extends Controller
             return false;
         }
         if($ownerRights && $userProjectRelation['role'] !== 'owner')
+        {
+            return false;
+        }
+        if($reportRights && ($userProjectRelation['role'] !== 'owner' && $userProjectRelation['role'] !== 'supervisor'))
         {
             return false;
         }
@@ -196,6 +209,47 @@ class ProjectController extends Controller
             'model' => $this->findModel($id),
             'role' => $owner->role
         ]);
+    }
+
+    public function actionActivities($id) {
+        return $this->render('activities', [
+            'model' => $this->findModel($id)
+        ]);
+    }
+
+    public function actionEfforts($id) {
+        return $this->render('efforts', [
+            'model' => $this->findModel($id)
+        ]);
+    }
+
+    public function actionReport($id, $target)
+    {
+        try {
+            $content = $this->renderPartial($target, [
+                'model' => $this->findModel($id),
+                'role' => 'none'
+            ]);
+        } catch(\Exception $ex){
+           return $this->redirect('/site/error');
+        }
+
+        $pdf = new Pdf([
+            'mode' => Pdf::MODE_CORE,
+            'format' => Pdf::FORMAT_A4,
+            'orientation' => Pdf::ORIENT_PORTRAIT,
+            'destination' => Pdf::DEST_BROWSER,
+            'content' => $content,
+            'cssFile' => '@vendor/kartik-v/yii2-mpdf/src/assets/kv-mpdf-bootstrap.min.css',
+            'cssInline' => '.kv-heading-1{font-size:18px}',
+            'options' => ['title' => "Report for $target"],
+            'methods' => [
+                'SetHeader'=>["Report for $target"],
+                'SetFooter'=>['{PAGENO}'],
+            ]
+        ]);
+
+        return $pdf->render();
     }
 
     /**

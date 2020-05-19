@@ -12,7 +12,15 @@ $this->title = $model->name;
 ?>
 <div class="project-view">
 
-    <h2><?= Html::encode("Income and outcome for ").Html::a($model->name, ['view', 'id' => $model->id]) ?></h2>
+    <div class="row">
+        <div class="col-md-11">
+            <h2><?= Html::encode("Income and outcome for ").Html::a($model->name, ['view', 'id' => $model->id]) ?></h2>
+        </div>
+        <div class="col-md-1">
+            <br>
+            <a target="_blank" href="/project/report?id=<?= $model->id ?>&target=revenue" class="btn btn-danger glyphicon glyphicon-open-file pull-right">PDF</a>
+        </div>
+    </div>
     <hr>
 
     <div class="row">
@@ -45,10 +53,10 @@ $this->title = $model->name;
                 $revenue = 0;
                 $incomesOutcomes = $model->getRevenues()->orderBy('updated_at ASC')->all();
                 foreach ($incomesOutcomes as $oneItem){
-                    echo "<hr><small class='pull-right' style='color: #999999'>".Yii::$app->formatter->asDatetime($oneItem->updated_at, 'HH:mm dd.MM.yyyy')."</small><h4>$oneItem->type: $oneItem->amount €</h4>"."<small>".Html::encode($oneItem->description)."</small>";
+                    echo "<small class='pull-right' style='color: #999999'>".Yii::$app->formatter->asDatetime($oneItem->updated_at, 'HH:mm dd.MM.yyyy')."</small><h4>$oneItem->type: $oneItem->amount €</h4>"."<small>".Html::encode($oneItem->description)."</small><hr>";
                     $oneItem->type === 'Income' ? $revenue += $oneItem->amount : $revenue -= $oneItem->amount;
                 }
-                echo "<hr><h3>Profit: $revenue €</h3>"
+                echo "<h3>Profit: $revenue €</h3>"
             ?>
         </div>
     </div>
